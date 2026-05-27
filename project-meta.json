@@ -1,0 +1,25 @@
+{
+  "curso": "CIENCIAS DA COMPUTAÇÃO",
+  "disciplina": "Orientação a Objetos",
+  "tema_escolhido": "1",
+  "linguagem": "Java",
+  "gerenciador_dependencias": "Maven",
+  "integrantes": [
+    {
+      "nome": "José Humberto Cavalcanti Gomes",
+      "github_username": "Humberto-hub206"
+    },
+    {
+      "nome": "Gabriel Azevedo Luna",
+      "github_username": "oKhrone"
+    },
+    {
+      "nome": "Deivid Gabriel Ramos e Silva",
+      "github_username": "Degas-03"
+    },
+    {
+      "nome": "Eduarda Rafaella Silva e Melo",
+      "github_username": "EduardaRafah"
+    }
+  ]
+}
