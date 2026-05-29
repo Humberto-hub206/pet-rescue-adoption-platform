@@ -1,0 +1,8 @@
+domain\pet\Species.class
+domain\pet\MedicalRecord.class
+domain\pet\PetAge.class
+domain\pet\VaccinationStatus.class
+domain\pet\Pet.class
+domain\pet\PetId.class
+domain\pet\PetName.class
+domain\pet\HealthStatus.class
