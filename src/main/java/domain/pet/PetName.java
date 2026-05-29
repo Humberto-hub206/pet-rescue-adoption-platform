@@ -1,3 +1,5 @@
+package domain.pet;
+
 public class PetName {
     private final String value;
 

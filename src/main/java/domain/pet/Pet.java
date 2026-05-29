@@ -1,6 +1,14 @@
+package domain.pet;
+
 public class Pet {
 
     private final PetName name;
+
+    private final PetId id;
+
+    private final Species species;
+
+    private final PetAge age;
 
     private HealthStatus healthStatus;
 
@@ -10,14 +18,19 @@ public class Pet {
 
     private boolean adopted;
 
-    public Pet(PetName name) {
+    public Pet(PetName name, Species species, PetAge age) {
+
+        this.id = new PetId();
 
         this.name = name;
 
+        this.species = species;
+
+        this.age = age;
+
         this.healthStatus = HealthStatus.SICK;
 
-        this.vaccinationStatus =
-                VaccinationStatus.NOT_VACCINATED;
+        this.vaccinationStatus = VaccinationStatus.NOT_VACCINATED;
 
         this.availableForAdoption = false;
 
@@ -42,22 +55,21 @@ public class Pet {
         if (healthStatus != HealthStatus.HEALTHY) {
 
             throw new IllegalStateException(
-                    "Pet is not healthy"
+                    "Pet não está saudável"
             );
         }
 
-        if (vaccinationStatus !=
-                VaccinationStatus.VACCINATED) {
+        if (vaccinationStatus != VaccinationStatus.VACCINATED) {
 
             throw new IllegalStateException(
-                    "Pet is not vaccinated"
+                    "Pet não está vacinado"
             );
         }
 
         if (adopted) {
 
             throw new IllegalStateException(
-                    "Pet already adopted"
+                    "Pet já foi adotado"
             );
         }
 
