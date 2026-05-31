@@ -1,5 +1,7 @@
 package domain.pet;
 
+import java.time.LocalDate;
+
 public class Pet {
 
     private final PetName name;
@@ -10,15 +12,33 @@ public class Pet {
 
     private final PetAge age;
 
+    private final MedicalRecord medicalRecord;
+
     private HealthStatus healthStatus;
 
     private VaccinationStatus vaccinationStatus;
 
-    private boolean availableForAdoption;
+    private AdoptionStatus adoptionStatus;
 
-    private boolean adopted;
+    public Pet(PetName name,Species species,PetAge age) {
 
-    public Pet(PetName name, Species species, PetAge age) {
+        if (name == null) {
+            throw new IllegalArgumentException(
+                    "Name cannot be null"
+            );
+        }
+
+        if (species == null) {
+            throw new IllegalArgumentException(
+                    "Species cannot be null"
+            );
+        }
+
+        if (age == null) {
+            throw new IllegalArgumentException(
+                    "Age cannot be null"
+            );
+        }
 
         this.id = new PetId();
 
@@ -28,74 +48,179 @@ public class Pet {
 
         this.age = age;
 
+        this.healthStatus = HealthStatus.HEALTHY;
+
+        this.vaccinationStatus =
+                VaccinationStatus.NOT_VACCINATED;
+
+        this.adoptionStatus =
+                AdoptionStatus.WAITING_EVALUATION;
+
+        this.medicalRecord =
+                new MedicalRecord();
+    }
+
+    private void ensureNotAdopted() {
+
+        if (isAdopted()) {
+            throw new IllegalStateException(
+                    "Adopted pet cannot be modified"
+            );
+        }
+    }
+
+    // HEALTH
+    public void markAsSick() {
+
+        ensureNotAdopted();
+
         this.healthStatus = HealthStatus.SICK;
 
-        this.vaccinationStatus = VaccinationStatus.NOT_VACCINATED;
-
-        this.availableForAdoption = false;
-
-        this.adopted = false;
+        medicalRecord.addEvent(
+                "Pet diagnosed as sick",
+                LocalDate.now()
+        );
     }
 
-    public void updateHealthStatus(
-            HealthStatus healthStatus
-    ) {
+    public void startTreatment() {
 
-        this.healthStatus = healthStatus;
+        ensureNotAdopted();
+
+        if (healthStatus != HealthStatus.SICK) {
+            throw new IllegalStateException(
+                    "Only sick pets can start treatment"
+            );
+        }
+
+        this.healthStatus =
+                HealthStatus.RECOVERING;
+
+        medicalRecord.addEvent(
+                "Treatment started",
+                LocalDate.now()
+        );
     }
 
+    public void recover() {
+
+        ensureNotAdopted();
+
+        if (healthStatus != HealthStatus.RECOVERING) {
+            throw new IllegalStateException(
+                    "Pet is not recovering"
+            );
+        }
+
+        this.healthStatus =
+                HealthStatus.HEALTHY;
+
+        medicalRecord.addEvent(
+                "Pet recovered",
+                LocalDate.now()
+        );
+    }
+
+    // VACCINATION
     public void vaccinate() {
+
+        ensureNotAdopted();
+
+        if (isVaccinated()) {
+            throw new IllegalStateException(
+                    "Pet already vaccinated"
+            );
+        }
 
         this.vaccinationStatus =
                 VaccinationStatus.VACCINATED;
+
+        medicalRecord.addEvent(
+                "Pet vaccinated",
+                LocalDate.now()
+        );
+    }
+
+    // ADOPTION
+    public boolean isEligibleForAdoption() {
+
+        return isHealthy()
+                && isVaccinated()
+                && !isAdopted();
     }
 
     public void makeAvailableForAdoption() {
 
-        if (healthStatus != HealthStatus.HEALTHY) {
+        ensureNotAdopted();
+
+        if (!isEligibleForAdoption()) {
 
             throw new IllegalStateException(
-                    "Pet não está saudável"
+                    "Pet cannot be made available for adoption"
             );
         }
 
-        if (vaccinationStatus != VaccinationStatus.VACCINATED) {
+        this.adoptionStatus =
+                AdoptionStatus.AVAILABLE;
 
-            throw new IllegalStateException(
-                    "Pet não está vacinado"
-            );
-        }
-
-        if (adopted) {
-
-            throw new IllegalStateException(
-                    "Pet já foi adotado"
-            );
-        }
-
-        this.availableForAdoption = true;
+        medicalRecord.addEvent(
+                "Pet available for adoption",
+                LocalDate.now()
+        );
     }
 
     public void adopt() {
 
-        if (!availableForAdoption) {
+        if (!isAvailableForAdoption()) {
 
             throw new IllegalStateException(
-                    "Pet is not available"
+                    "Pet is not available for adoption"
             );
         }
 
-        this.adopted = true;
+        this.adoptionStatus =
+                AdoptionStatus.ADOPTED;
 
-        this.availableForAdoption = false;
+        medicalRecord.addEvent(
+                "Pet adopted",
+                LocalDate.now()
+        );
+    }
+
+    // QUERIES
+    public boolean isHealthy() {
+        return healthStatus == HealthStatus.HEALTHY;
+    }
+
+    public boolean isVaccinated() {
+        return vaccinationStatus ==
+                VaccinationStatus.VACCINATED;
     }
 
     public boolean isAvailableForAdoption() {
-        return availableForAdoption;
+        return adoptionStatus ==
+                AdoptionStatus.AVAILABLE;
     }
 
     public boolean isAdopted() {
-        return adopted;
+        return adoptionStatus ==
+                AdoptionStatus.ADOPTED;
+    }
+
+    // GETTERS
+    public PetId getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name.getValue();
+    }
+
+    public Species getSpecies() {
+        return species;
+    }
+
+    public PetAge getAge() {
+        return age;
     }
 
     public HealthStatus getHealthStatus() {
@@ -106,8 +231,11 @@ public class Pet {
         return vaccinationStatus;
     }
 
-    public String getName() {
-        return name.getValue();
+    public AdoptionStatus getAdoptionStatus() {
+        return adoptionStatus;
     }
 
+    public MedicalRecord getMedicalRecord() {
+        return medicalRecord;
+    }
 }
