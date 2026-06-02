@@ -1,249 +1,213 @@
+package domain.adoption;
+
+import domain.pet.Pet;
 import java.time.LocalDateTime;
-import java.util.Scanner;
-import java.util.UUID;
 
-enum AdoptionStatus {
-    PENDING("Pendente"),
-    APPROVED("Aprovado"),
-    REJECTED("Rejeitado"),
-    COMPLETED("Finalizado");
-
-    private final String description;
-    AdoptionStatus(String description) { this.description = description; }
-    public String getDescription() { return description; }
-}
-
-enum PetStatus {
-    AVAILABLE("Disponível"),
-    ADOPTED("Adotado"),
-    UNAVAILABLE("Indisponível");
-
-    private final String description;
-    PetStatus(String description) { this.description = description; }
-    public String getDescription() { return description; }
-}
-
-// ==================== CLASSE PET ====================
-class Pet {
-    private final UUID id;
-    private final String name;
-    private final String species;
-    private final int age;
-    private PetStatus status;
-
-    public Pet(String name, String species, int age) {
-        this.id = UUID.randomUUID();
-        this.name = name;
-        this.species = species;
-        this.age = age;
-        this.status = PetStatus.AVAILABLE;
-    }
-
-    public void markAsAdopted() {
-        if (this.status != PetStatus.AVAILABLE) {
-            throw new IllegalStateException("Pet não está disponível para adoção");
-        }
-        this.status = PetStatus.ADOPTED;
-    }
-
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public String getSpecies() { return species; }
-    public int getAge() { return age; }
-    public PetStatus getStatus() { return status; }
-}
-
-// ==================== VALUE OBJECTS ====================
-class AdopterName {
-    private final String value;
-    public AdopterName(String value) {
-        if (value == null || value.trim().isEmpty()) throw new IllegalArgumentException("Nome é obrigatório");
-        if (value.length() < 3) throw new IllegalArgumentException("Nome deve ter pelo menos 3 caracteres");
-        this.value = value;
-    }
-    public String getValue() { return value; }
-}
-
-class AdopterCpf {
-    private final String value;
-    public AdopterCpf(String value) {
-        if (value == null || !value.matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) 
-            throw new IllegalArgumentException("CPF inválido. Use: xxx.xxx.xxx-xx");
-        this.value = value;
-    }
-    public String getValue() { return value; }
-}
-
-class AdopterPhone {
-    private final String value;
-    public AdopterPhone(String value) {
-        if (value == null || !value.matches("\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}")) 
-            throw new IllegalArgumentException("Telefone inválido");
-        this.value = value;
-    }
-    public String getValue() { return value; }
-}
-
-class InterviewNotes {
-    private final String value;
-    public InterviewNotes(String value) {
-        if (value != null && value.length() > 1000) 
-            throw new IllegalArgumentException("Observações muito longas (máx 1000 caracteres)");
-        this.value = value;
-    }
-    public String getValue() { return value; }
-}
-
-// ==================== ENTIDADE PRINCIPAL ====================
 public class AdoptionProcess {
 
-    private final UUID id;
+    private final AdoptionProcessId id;
+
     private final Pet pet;
+
     private final AdopterName adopterName;
+
     private final AdopterCpf adopterCpf;
+
     private final AdopterPhone adopterPhone;
+
     private InterviewNotes interviewNotes;
-    private AdoptionStatus status;
+
+    private AdoptionProcessStatus status;
+
     private final LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
+
     private LocalDateTime interviewDate;
+
     private LocalDateTime completedAt;
 
-    public AdoptionProcess(Pet pet, AdopterName adopterName, AdopterCpf adopterCpf, AdopterPhone adopterPhone) {
-        if (pet.getStatus() != PetStatus.AVAILABLE) {
-            throw new IllegalStateException("Só pets disponíveis podem iniciar processo de adoção");
-        }
-        
-        this.id = UUID.randomUUID();
-        this.pet = pet;
-        this.adopterName = adopterName;
-        this.adopterCpf = adopterCpf;
-        this.adopterPhone = adopterPhone;
-        this.status = AdoptionStatus.PENDING;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    public AdoptionProcess(Pet pet, AdopterName adopterName, AdopterCpf adopterCpf, AdopterPhone adopterPhone){
+    
+    if (pet == null) {
+    throw new IllegalArgumentException(
+            "Pet cannot be null"
+    );
     }
 
+    if (adopterName == null) {
+        throw new IllegalArgumentException(
+                "Adopter name cannot be null"
+        );
+    }
+
+    if (adopterCpf == null) {
+        throw new IllegalArgumentException(
+                "Adopter cpf cannot be null"
+        );
+    }
+
+    if (adopterPhone == null) {
+        throw new IllegalArgumentException(
+                "Adopter phone cannot be null"
+        );
+    }
+    
+    if (!pet.isAvailableForAdoption()) {
+
+        throw new IllegalStateException(
+                "Pet is not available for adoption"
+        );
+    }
+
+    this.id = new AdoptionProcessId();
+
+    this.pet = pet;
+
+    this.adopterName = adopterName;
+
+    this.adopterCpf = adopterCpf;
+
+    this.adopterPhone = adopterPhone;
+
+    this.status = AdoptionProcessStatus.PENDING;
+
+    this.createdAt = LocalDateTime.now();
+
+    this.updatedAt = LocalDateTime.now();
+    }
+    //agendamento de entrevista, rejeição e conclusão do processo
     public void scheduleInterview(LocalDateTime interviewDate) {
-        if (this.status != AdoptionStatus.PENDING) {
-            throw new IllegalStateException("Só é possível agendar entrevista em processos PENDENTES");
+        
+        if (this.interviewDate != null) {
+            throw new IllegalStateException(
+                    "Interview already scheduled"
+            );
         }
+        if (interviewDate == null) {
+            throw new IllegalArgumentException(
+                    "Interview date cannot be null"
+            );
+        }
+        if (interviewDate.isBefore(LocalDateTime.now())) {
+
+            throw new IllegalArgumentException(
+                    "Interview date must be in the future"
+            );
+        }
+        if (status != AdoptionProcessStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Interview can only be scheduled for pending processes"
+            );
+        }
+
         this.interviewDate = interviewDate;
+
+        this.updatedAt = LocalDateTime.now();
+    }
+    //rejeição do processo
+    public void reject(String notes) {
+
+        if (status == AdoptionProcessStatus.COMPLETED) {
+
+            throw new IllegalStateException(
+                    "Completed process cannot be rejected"
+            );
+        }
+        if (status == AdoptionProcessStatus.REJECTED) {
+            throw new IllegalStateException(
+                    "Process is already rejected"
+            );
+        }
+
+        this.interviewNotes = new InterviewNotes(notes);
+
+        this.status = AdoptionProcessStatus.REJECTED;
+
         this.updatedAt = LocalDateTime.now();
     }
 
     public void approve(String notes) {
-        if (this.status != AdoptionStatus.PENDING) {
-            throw new IllegalStateException("Apenas processos PENDENTES podem ser aprovados");
-        }
-        this.interviewNotes = new InterviewNotes(notes);
-        this.status = AdoptionStatus.APPROVED;
-        this.updatedAt = LocalDateTime.now();
+
+    if (status != AdoptionProcessStatus.PENDING) {
+
+        throw new IllegalStateException(
+                "Only pending processes can be approved"
+        );
+    }
+    if (interviewDate == null) {
+        throw new IllegalStateException(
+                "Interview must be scheduled before approval"
+        );
+    }
+    this.interviewNotes = new InterviewNotes(notes);
+
+    this.status = AdoptionProcessStatus.APPROVED;
+
+    this.updatedAt = LocalDateTime.now();
     }
 
-    public void reject(String notes) {
-        if (this.status == AdoptionStatus.COMPLETED) {
-            throw new IllegalStateException("Processo já finalizado não pode ser rejeitado");
-        }
-        this.interviewNotes = new InterviewNotes(notes);
-        this.status = AdoptionStatus.REJECTED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
+    //conclusão do processo
     public void completeAdoption() {
-        if (this.status != AdoptionStatus.APPROVED) {
-            throw new IllegalStateException("Apenas processos APROVADOS podem ser finalizados");
-        }
-        this.status = AdoptionStatus.COMPLETED;
-        this.completedAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        
-        pet.markAsAdopted();
-        
-        System.out.println("🎉 Adoção FINALIZADA com sucesso!");
-        System.out.println("Pet " + pet.getName() + " agora está ADOTADO.");
+
+    if (status != AdoptionProcessStatus.APPROVED) {
+
+        throw new IllegalStateException(
+                "Only approved processes can be completed"
+        );
     }
 
-    // ==================== GETTERS (corrigindo warnings) ====================
-    public UUID getId() { return id; }
-    public Pet getPet() { return pet; }
-    public AdopterName getAdopterName() { return adopterName; }
-    public AdopterCpf getAdopterCpf() { return adopterCpf; }
-    public AdopterPhone getAdopterPhone() { return adopterPhone; }
-    public InterviewNotes getInterviewNotes() { return interviewNotes; }
-    public AdoptionStatus getStatus() { return status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public LocalDateTime getInterviewDate() { return interviewDate; }
-    public LocalDateTime getCompletedAt() { return completedAt; }
-}
+    this.status =
+            AdoptionProcessStatus.COMPLETED;
 
-// ==================== MAIN INTERATIVO ====================
-class AdoptionDemo {
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+    this.completedAt =
+            LocalDateTime.now();
 
-        try {
-            System.out.println("=== SISTEMA DE ADOÇÃO ===\n");
+    this.updatedAt =
+            LocalDateTime.now();
 
-            // Pet
-            System.out.println("--- Dados do Pet ---");
-            System.out.print("Nome do Pet: ");
-            String petName = sc.nextLine();
-            System.out.print("Espécie: ");
-            String species = sc.nextLine();
-            System.out.print("Idade: ");
-            int age = sc.nextInt();
-            sc.nextLine();
+    pet.adopt();
+    }
 
-            Pet pet = new Pet(petName, species, age);
-            System.out.println("Pet criado → " + pet.getStatus() + "\n");
+    public boolean isPending() {
+    return status == AdoptionProcessStatus.PENDING;
+    }
 
-            // Adotante
-            System.out.println("--- Dados do Adotante ---");
-            System.out.print("Nome completo: ");
-            String nome = sc.nextLine();
-            System.out.print("CPF: ");
-            String cpf = sc.nextLine();
-            System.out.print("Telefone: ");
-            String telefone = sc.nextLine();
+    public boolean isApproved() {
+        return status == AdoptionProcessStatus.APPROVED;
+    }
 
-            AdoptionProcess processo = new AdoptionProcess(
-                pet, 
-                new AdopterName(nome),
-                new AdopterCpf(cpf),
-                new AdopterPhone(telefone)
-            );
+    public boolean isRejected() {
+        return status == AdoptionProcessStatus.REJECTED;
+    }
 
-            System.out.println("\n✅ Processo criado com sucesso!");
-            System.out.println("Pet: " + pet.getName());
-            System.out.println("Adotante: " + processo.getAdopterName().getValue());
-            System.out.println("CPF: " + processo.getAdopterCpf().getValue());
-            System.out.println("Telefone: " + processo.getAdopterPhone().getValue());
-            System.out.println("Criado em: " + processo.getCreatedAt());
-            System.out.println("Status: " + processo.getStatus());
+    public boolean isCompleted() {
+        return status == AdoptionProcessStatus.COMPLETED;
+    }
 
-            // Fluxo
-            System.out.print("\nAprovar processo? (s/n): ");
-            if (sc.nextLine().trim().toLowerCase().equals("s")) {
-                System.out.print("Observações da entrevista: ");
-                String notes = sc.nextLine();
-                processo.approve(notes);
-                System.out.println("✅ Aprovado!");
-
-                System.out.print("\nFinalizar adoção agora? (s/n): ");
-                if (sc.nextLine().trim().toLowerCase().equals("s")) {
-                    processo.completeAdoption();
-                }
-            } else {
-                processo.reject("Não atendeu aos critérios.");
-                System.out.println("❌ Processo rejeitado.");
-            }
-
-        } catch (Exception e) {
-            System.out.println("❌ Erro: " + e.getMessage());
-        } finally {
-            sc.close();
-        }
+    //getters
+    public AdoptionProcessStatus getStatus() {
+        return status;
+    }
+    public Pet getPet() {
+        return pet;
+    }
+    public LocalDateTime getInterviewDate() {
+        return interviewDate;
+    }
+    public InterviewNotes getInterviewNotes() {
+        return interviewNotes;
+    }
+    public AdoptionProcessId getId() {
+        return id;
+    }
+    public AdopterName getAdopterName() {
+        return adopterName;
+    }
+    public AdopterCpf getAdopterCpf() {
+        return adopterCpf;
+    }
+    public AdopterPhone getAdopterPhone() {
+        return adopterPhone;
     }
 }
