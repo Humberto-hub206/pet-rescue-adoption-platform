@@ -28,7 +28,7 @@ public class AdoptionProcessTest {
         return new AdoptionProcess(
                 createAvailablePet(),
                 new AdopterName("João Silva"),
-                new AdopterCpf("12345678901"),
+                new AdopterCpf("123.456.789-01"),
                 new AdopterPhone("82999999999")
         );
     }
@@ -180,7 +180,7 @@ public class AdoptionProcessTest {
                 () -> new AdoptionProcess(
                         pet,
                         new AdopterName("João Silva"),
-                        new AdopterCpf("12345678901"),
+                        new AdopterCpf("123.456.789-01"),
                         new AdopterPhone("82999999999")
                 )
         );
