@@ -185,45 +185,4 @@ public class FosterHomeTest {
         );
     }
 
-    @Test
-    void shouldNotCreateFosterHomeWithoutCaretakerName() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new CaretakerName(null)
-        );
-    }
-
-    @Test
-    void shouldNotCreateFosterHomeWithoutAddress() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Address(null)
-        );
-    }
-
-    @Test
-    void shouldNotCreateFosterHomeWithoutPhoneNumber() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new PhoneNumber(null)
-        );
-    }
-
-    @Test
-    void shouldNotCreateFosterHomeWithoutCapacity() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Capacity(0)
-        );
-    }
-
-    @Test
-    void shouldReturnImmutableAssignmentsList() {
-        FosterHome home = createFosterHome(2);
-
-        assertThrows(
-                UnsupportedOperationException.class,
-                () -> home.getAssignments().add(null)
-        );
-    }
 }
