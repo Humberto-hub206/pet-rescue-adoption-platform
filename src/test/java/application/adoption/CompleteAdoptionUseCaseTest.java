@@ -27,7 +27,7 @@ public class CompleteAdoptionUseCaseTest {
                 new AdoptionProcess(
                         pet,
                         new AdopterName("Ana"),
-                        new AdopterCpf("12345678901"),
+                        new AdopterCpf("123.456.789-01"),
                         new AdopterPhone("82999999999")
                 );
 
