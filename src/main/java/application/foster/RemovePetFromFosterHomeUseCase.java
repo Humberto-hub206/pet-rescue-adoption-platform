@@ -4,13 +4,11 @@ import domain.foster.FosterHome;
 import domain.foster.FosterHomeId;
 import domain.pet.Pet;
 
-import java.time.LocalDate;
-
-public class AssignPetToFosterHomeUseCase {
+public class RemovePetFromFosterHomeUseCase {
 
     private final FosterHomeRepository repository;
 
-    public AssignPetToFosterHomeUseCase(
+    public RemovePetFromFosterHomeUseCase(
             FosterHomeRepository repository) {
 
         this.repository = repository;
@@ -18,21 +16,15 @@ public class AssignPetToFosterHomeUseCase {
 
     public void execute(
             FosterHomeId fosterHomeId,
-            Pet pet,
-            LocalDate startDate,
-            LocalDate endDate) {
+            Pet pet) {
 
         FosterHome fosterHome =
             repository.findById(fosterHomeId)
                 .orElseThrow(() ->
-                    new IllegalArgumentException(
-                        "Foster home not found"));
+                        new IllegalArgumentException(
+                                "Foster home not found"));
 
-        fosterHome.assignPet(
-                pet,
-                startDate,
-                endDate
-        );
+        fosterHome.removePet(pet);
 
         repository.save(fosterHome);
     }
